@@ -7,7 +7,7 @@ enum CardType {
     PROPERY,
     TRAIN_STATION,
     SPECIAL
-}
+};
 
 enum PropertyColor {
     BROWN,
@@ -18,7 +18,7 @@ enum PropertyColor {
     YELLOW,
     GREEN,
     DBLUE
-} 
+};
 
 union CardProperties {
     struct { // Propiedad
