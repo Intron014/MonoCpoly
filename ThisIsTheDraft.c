@@ -53,6 +53,7 @@ union CardProperties {
         int type;
     } special;
 };
+
 struct Card {
     enum CardType type;
     enum CardProperties properties;
@@ -65,4 +66,25 @@ struct { // Players
     bool in_jail;
     bool has_water;
     bool has_electric;
+};
+
+void init_board (struct Card card[]) {
+    card[0].type = SPECIAL;
+    card[0].properties.special.type = 0;
+    
+    card[1].type = PROPERTY;
+    card[1].properties.property.has_owner = HAS_OWNER_DEFAULT;
+    strcpy(card[1].properties.propery.nombre, "Ronda de Valencia");
+    card[1].properties.property.precio = 60;
+    card[1].properties.property.color = BROWN;
+    card[1].properties.property.mortgage = 30;
+    card[1].properties.property.is_mortgaged = IS_MORTGAGED_DEFAULT;
+    card[1].properties.property.houses = HOUSE_DEFAULT;
+    card[1].properties.property.precioXcasa = 50;
+    card[1].properties.property.rent[0] = 2;
+    card[1].properties.property.rent[1] = 10;
+    card[1].properties.property.rent[2] = 30;
+    card[1].properties.property.rent[3] = 90;
+    card[1].properties.property.rent[4] = 160;
+    card[1].properties.property.rent[5] = 250;
 };
