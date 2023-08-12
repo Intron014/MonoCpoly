@@ -27,7 +27,6 @@ union CardProperties {
         int is_mortgaged;
         int houses; // 0 - No house // 1 to 4 - House // 5 - Hotel // 
         int precioXcasa;
-        int precioXhotel;
         int rent[6]
     } property;
     struct { // Train Station
@@ -45,7 +44,22 @@ union CardProperties {
     3 - Caja de la comunidad
     4 - Impuesto pre-salida
     5 - Impuesto pos-salida
+    6 - Go to jail
+    7 - Parking gratuito
     */
         int type;
-    }
-}
+    } special;
+};
+struct Card {
+    enum CardType type;
+    enum CardProperties properties;
+};
+
+struct { // Players
+    int money;
+    int pos;
+    // Flags
+    bool in_jail;
+    bool has_water;
+    bool has_electric;
+};
