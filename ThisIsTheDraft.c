@@ -21,7 +21,7 @@ enum PropertyColor {
 };
 
 union CardProperties {
-    struct { // Propiedad
+    struct Property {
         int has_owner;
         char nombre[50];
         int precio;
@@ -31,15 +31,15 @@ union CardProperties {
         int houses; // 0 - No house // 1 to 4 - House // 5 - Hotel // 
         int precioXcasa;
         int rent[6]
-    } property;
-    struct { // Train Station
+    };
+    struct Train_station{ 
     /* The prices will be determined by the 
     train station flow, looking at the flags
     found on the players */
         int has_owner;
         char nombre[50];
-    } train_station;
-    struct { // Special
+    };
+    struct Special{
     /*
     0 - Salida
     1 - Carcel (Visita) [if here check in_jail player flag]
@@ -51,12 +51,17 @@ union CardProperties {
     7 - Parking gratuito
     */
         int type;
-    } special;
+    };
 };
 
 struct Card {
     enum CardType type;
     enum CardProperties properties;
+};
+
+struct Ccandl {
+    int type; // 0 - Suerte // 1 - Caja de la Comunidad //
+    char description[250];
 };
 
 struct { // Players
