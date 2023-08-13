@@ -73,23 +73,78 @@ struct { // Players
     bool has_electric;
 };
 
-void init_board (struct Card card[]) {
-    card[0].type = SPECIAL;
-    card[0].properties.special.type = 0;
-    
-    card[1].type = PROPERTY;
-    card[1].properties.property.has_owner = HAS_OWNER_DEFAULT;
-    strcpy(card[1].properties.propery.nombre, "Ronda de Valencia");
-    card[1].properties.property.precio = 60;
-    card[1].properties.property.color = BROWN;
-    card[1].properties.property.mortgage = 30;
-    card[1].properties.property.is_mortgaged = IS_MORTGAGED_DEFAULT;
-    card[1].properties.property.houses = HOUSE_DEFAULT;
-    card[1].properties.property.precioXcasa = 50;
-    card[1].properties.property.rent[0] = 2;
-    card[1].properties.property.rent[1] = 10;
-    card[1].properties.property.rent[2] = 30;
-    card[1].properties.property.rent[3] = 90;
-    card[1].properties.property.rent[4] = 160;
-    card[1].properties.property.rent[5] = 250;
+void card_file_gen(int why) {
+    // why 0 - file not found // why 1 - edit struct // 
+    struct Card card[40];
+    int cnt, ans, aux;
+    printf("Master card.bin Editor\n");
+    for(cnt = 0; cnt<40 ; cnt++){
+         printf("Editando la casilla %i\n
+         Introduzca el tipo de casilla\n
+         1 - Propiedad\n
+         2 - Estacion de tren\n
+         3 - Especial\n
+         --> ", cnt);
+         scanf("%i", &ans);
+         fflish(stdin);
+         if(ans==1){ 
+            card[cnt].type = PROPERTY;
+            card[cnt].properties.Property.has_owner = HAS_OWNER_DEFAULT;
+            card[cnt].properties.Property.is_mortgaged = IS_MORTGAGED_DEFAULT;
+            card[cnt].properties.Property.houses = HOUSE_DEFAULT;
+            printf("Nombre: ");
+            gets(card[cnt].properties.Property.nombre);
+            printf("Precio: ");
+            scanf("%i", &card[cnt].properties.Property.precio);
+            printf("Mortgage: ");
+            scanf("%i", &card[cnt].properties.Property.mortgage);
+            printf("Color: ");
+            scanf("%i", &card[cnt].properties.Property.color);
+            printf("Precio por casa: ");
+            scanf("%i", &card[cnt].properties.Property.precioXcasa);
+            for(aux = 0; aux < 6 ; aux++){
+                printf("Alquiler %i: ", aux);
+                scanf("%i", &card[cnt].properties.Property.rent[aux]);
+        };
+        else if(ans==2){
+            card[cnt].type = TRAIN_STATION;
+            card[cnt].properties.Train_station.has_owner = HAS_OWNER_DEFAULT;
+            printf("Nombre: ");
+            gets(card[cnt].properties.Train_station.nombre);
+        };
+        else if(ans==3){
+            card[cnt].type = SPECIAL;
+            printf("Editando la casilla especial %i\n
+            Introduzca el tipo de casilla\n
+            0 - Salida\n
+            1 - Carcel (Visita)\n
+            2 - Suerte\n
+            3 - Caja de la comunidad\n
+            4 - Impuesto pre-salida\n
+            5 - Impuesto pos-salida\n
+            6 - Go to jail\n
+            7 - Parking gratuito\n
+            --> ", cnt);
+            scanf("%i", &card[cnt].properties.Special.type);
+            fflush(stdin);
+        };
+    };
+
+    FILE *file = fopen("card.bin", "wb");
+    if (file == NULL) {
+        perror("Error opening file");
+        return 1;
+    };
+
+    size_t num_written = fwrite(&card, sizeof(struct Card), 40, file);
+    if (num_written != 40) {
+        perror("Error writing to file");
+        fclose(file);
+        return 1;
+    };
+
+    fclose(file);
+
+    printf("Card data saved to card.bin\n");
+    return 0;
 };
