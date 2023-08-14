@@ -23,7 +23,6 @@ enum PropertyColor {
 union CardProperties {
     struct Property {
         int has_owner;
-        char nombre[50];
         int precio;
         enum PropertyColor color;
         int mortgage;
@@ -37,7 +36,6 @@ union CardProperties {
     train station flow, looking at the flags
     found on the players */
         int has_owner;
-        char nombre[50];
     };
     struct Special{
     /*
@@ -57,6 +55,7 @@ union CardProperties {
 struct Card {
     enum CardType type;
     enum CardProperties properties;
+    char nombre[50];
 };
 
 struct Ccandl {
@@ -79,12 +78,16 @@ void card_file_gen(int why) {
     int cnt, ans, aux;
     printf("Master card.bin Editor\n");
     for(cnt = 0; cnt<40 ; cnt++){
+        strcpy(card[cnt].nombre, "NULL");
+    }
+    for(cnt = 0; cnt<40 ; cnt++){
          printf("Editando la casilla %i\n
+         Nombre (if any): %s\n
          Introduzca el tipo de casilla\n
          1 - Propiedad\n
          2 - Estacion de tren\n
          3 - Especial\n
-         --> ", cnt);
+         --> ", cnt, card[cnt].nombre);
          scanf("%i", &ans);
          fflish(stdin);
          if(ans==1){ 
@@ -93,7 +96,7 @@ void card_file_gen(int why) {
             card[cnt].properties.Property.is_mortgaged = IS_MORTGAGED_DEFAULT;
             card[cnt].properties.Property.houses = HOUSE_DEFAULT;
             printf("Nombre: ");
-            gets(card[cnt].properties.Property.nombre);
+            gets(card[cnt].nombre);
             printf("Precio: ");
             scanf("%i", &card[cnt].properties.Property.precio);
             printf("Mortgage: ");
@@ -110,7 +113,7 @@ void card_file_gen(int why) {
             card[cnt].type = TRAIN_STATION;
             card[cnt].properties.Train_station.has_owner = HAS_OWNER_DEFAULT;
             printf("Nombre: ");
-            gets(card[cnt].properties.Train_station.nombre);
+            gets(card[cnt].nombre);
         };
         else if(ans==3){
             card[cnt].type = SPECIAL;
@@ -127,6 +130,7 @@ void card_file_gen(int why) {
             --> ", cnt);
             scanf("%i", &card[cnt].properties.Special.type);
             fflush(stdin);
+            // Switch here para poner nombre (el mismo que el tipo de casilla)
         };
     };
 
