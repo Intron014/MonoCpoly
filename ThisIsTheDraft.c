@@ -77,9 +77,11 @@ void card_file_gen(int why) {
     struct Card card[40];
     int cnt, ans, aux;
     printf("Master card.bin Editor\n");
-    for(cnt = 0; cnt<40 ; cnt++){
-        strcpy(card[cnt].nombre, "NULL");
-    }
+    if(why==0){
+        for(cnt = 0; cnt<40 ; cnt++){
+            strcpy(card[cnt].nombre, "NULL");
+        }
+    } 
     for(cnt = 0; cnt<40 ; cnt++){
          printf("Editando la casilla %i\n
          Nombre (if any): %s\n
