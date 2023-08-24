@@ -80,7 +80,7 @@ struct Card {
 struct Ccandl {
     int type; // 0 - Suerte // 1 - Caja de la Comunidad //
     char description[250];
-};
+} Ccandl;
 
 struct { // Players
     int money;
@@ -89,7 +89,7 @@ struct { // Players
     bool in_jail;
     bool has_water;
     bool has_electric;
-};
+} Players;
 
 int card_file_gen(int why) {
     // why 0 - file not found // why 1 - edit struct //
@@ -119,9 +119,12 @@ int card_file_gen(int why) {
         fclose(file);
     }
     for(cnt = 0; cnt<40 ; cnt++){
-         printf("Editando la casilla %i\nNombre: %s\nTipo: %s\nIntroduzca el tipo de casilla\n1 - Propiedad\n2 - Estacion de tren\n3 - Especial\n--> ", cnt, card[cnt].nombre, cardTypeToString(card[cnt].type));
-         scanf("%i", &ans);
-         fflush(stdin);
+        do {
+            printf("Editando la casilla %i\nNombre: %s\nTipo: %s\nIntroduzca el tipo de casilla\n1 - Propiedad\n2 - Estacion de tren\n3 - Especial\n--> ",
+                   cnt, card[cnt].nombre, cardTypeToString(card[cnt].type));
+            scanf("%i", &ans);
+            fflush(stdin);
+        }while(ans<1 || ans>3);
          if(ans==1) {
              card[cnt].type = PROPERTY;
              card[cnt].properties.Property.has_owner = HAS_OWNER_DEFAULT;
@@ -136,9 +139,11 @@ int card_file_gen(int why) {
              printf("Mortgage: ");
              fflush(stdin);
              scanf("%i", &card[cnt].properties.Property.mortgage);
-             printf("Color: ");
-             fflush(stdin);
-             scanf("%i", &aux);
+             do {
+                 printf("Color: ");
+                 fflush(stdin);
+                 scanf("%i", &aux);
+             } while (aux < 0 || aux > 7);
              switch (aux) {
                  case 0: card[cnt].properties.Property.color = BROWN; break;
                  case 1: card[cnt].properties.Property.color = LBLUE; break;
@@ -148,7 +153,7 @@ int card_file_gen(int why) {
                  case 5: card[cnt].properties.Property.color = YELLOW; break;
                  case 6: card[cnt].properties.Property.color = GREEN; break;
                  case 7: card[cnt].properties.Property.color = DBLUE; break;
-             }
+             };
              printf("Precio por casa: ");
              fflush(stdin);
              scanf("%i", &card[cnt].properties.Property.precioXcasa);
@@ -156,16 +161,16 @@ int card_file_gen(int why) {
                  printf("Alquiler %i: ", aux);
                  fflush(stdin);
                  scanf("%i", &card[cnt].properties.Property.rent[aux]);
-             }
+             };
          }
-        else if(ans==2){
+         else if(ans==2){
             card[cnt].type = TRAIN_STATION;
             card[cnt].properties.Train_station.has_owner = HAS_OWNER_DEFAULT;
             printf("Nombre: ");
             fflush(stdin);
             scanf("%s", card[cnt].nombre);
-        }
-        else if(ans==3){
+         }
+         else if(ans==3){
             card[cnt].type = SPECIAL;
             printf("Editando la casilla especial %i\nIntroduzca el tipo de casilla\n0 - Salida\n1 - Carcel (Visita)\n2 - Suerte\n3 - Caja de la comunidad\n4 - Impuesto pre-salida\n5 - Impuesto pos-salida\n6 - Go to jail\n7 - Parking gratuito\n--> ", cnt);
             scanf("%i", &card[cnt].properties.Special.type);
@@ -179,7 +184,7 @@ int card_file_gen(int why) {
                  case 5: strcpy(card[cnt].nombre, "Impuesto pos-salida"); break;
                  case 6: strcpy(card[cnt].nombre, "Go to jail"); break;
                  case 7: strcpy(card[cnt].nombre, "Parking gratuito"); break;
-             }
+             };
         };
     };
 
