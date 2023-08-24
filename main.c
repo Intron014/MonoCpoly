@@ -38,7 +38,18 @@ const char* cardTypeToString(enum CardType type) {
             return "Unknown Type";
     }
 }
-
+const char* colorToString(enum PropertyColor color){
+    switch (color) {
+        case BROWN: return "Brown"; break;
+        case LBLUE: return "Light Blue"; break;
+        case PINK: return "Pink"; break;
+        case ORANGE: return "Orange"; break;
+        case RED: return "Red"; break;
+        case YELLOW: return "Yellow"; break;
+        case GREEN: return "Green"; break;
+        case DBLUE: return "Dark Blue"; break;
+    }
+}
 union CardProperties {
     struct Property {
         int has_owner;
@@ -120,12 +131,23 @@ int card_file_gen(int why) {
     }
     for(cnt = 0; cnt<40 ; cnt++){
         do {
-            printf("Editando la casilla %i\nNombre: %s\nTipo: %s\nIntroduzca el tipo de casilla\n1 - Propiedad\n2 - Estacion de tren\n3 - Especial\n--> ",
+            printf("Editando la casilla %i\nNombre: %s\nTipo: %s\nIntroduzca el tipo de casilla\n1 - Propiedad\n2 - Estacion de tren\n3 - Especial\n0 - Skip\n--> ",
                    cnt, card[cnt].nombre, cardTypeToString(card[cnt].type));
+            if(card[cnt].type == PROPERTY){
+                printf("Precio: %i\nMortgage: %i\nColor: %s\nPrecio por casa: %i\nAlquileres: %i %i %i %i %i %i\n",
+                       card[cnt].properties.Property.precio, card[cnt].properties.Property.mortgage, colorToString(card[cnt].properties.Property.color),
+                       card[cnt].properties.Property.precioXcasa, card[cnt].properties.Property.rent[0], card[cnt].properties.Property.rent[1],
+                       card[cnt].properties.Property.rent[2], card[cnt].properties.Property.rent[3], card[cnt].properties.Property.rent[4],
+                       card[cnt].properties.Property.rent[5]);
+            }
             scanf("%i", &ans);
             fflush(stdin);
-        }while(ans<1 || ans>3);
-         if(ans==1) {
+        }while(ans<0 || ans>3);
+        if(ans==0) {
+            printf("Skipping\n");
+            continue;
+        }
+        else if(ans==1) {
              card[cnt].type = PROPERTY;
              card[cnt].properties.Property.has_owner = HAS_OWNER_DEFAULT;
              card[cnt].properties.Property.is_mortgaged = IS_MORTGAGED_DEFAULT;
