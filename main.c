@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <dirent.h>
 
 #define HAS_OWNER_DEFAULT -1
 #define IS_MORTGAGED_DEFAULT 0
@@ -77,6 +78,8 @@ union CardProperties {
     5 - Impuesto pos-salida
     6 - Go to jail
     7 - Parking gratuito
+    8 - Servicio de agua
+    9 - Servicio electrico
     */
         int type;
     } Special;
@@ -101,11 +104,16 @@ struct { // Players
     bool has_water;
     bool has_electric;
 } Players;
+void clearInputBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
 
 int card_file_gen(int why) {
     // why 0 - file not found // why 1 - edit struct //
     struct Card card[40];
-    int cnt, ans, aux;
+    int cnt, aux;
+    char ans;
     if(why==0){
         printf("File not found, opening editor\n");
         for(cnt = 0; cnt<40 ; cnt++){
@@ -131,8 +139,8 @@ int card_file_gen(int why) {
     }
     printf("Master card.bin Editor\n");
     for(cnt = 0; cnt<40 ; cnt++){
-        do {
-            printf("Editando la casilla %i\nNombre: %s\nTipo: %s\n",cnt, card[cnt].nombre, cardTypeToString(card[cnt].type));
+        // do {
+            printf("\nEditando la casilla %i\nNombre: %s\nTipo: %s\n",cnt, card[cnt].nombre, cardTypeToString(card[cnt].type));
             if(card[cnt].type == PROPERTY && strcmp(card[cnt].nombre, "NULL")!=0){
                 printf("Precio: %i\nMortgage: %i\nColor: %s\nPrecio por casa: %i\nAlquileres: %i %i %i %i %i %i\n",
                        card[cnt].properties.Property.precio, card[cnt].properties.Property.mortgage, colorToString(card[cnt].properties.Property.color),
@@ -140,18 +148,28 @@ int card_file_gen(int why) {
                        card[cnt].properties.Property.rent[2], card[cnt].properties.Property.rent[3], card[cnt].properties.Property.rent[4],
                        card[cnt].properties.Property.rent[5]);
             }
-            printf("Introduzca el tipo de casilla\n1 - Propiedad\n2 - Estacion de tren\n3 - Especial\n0 - Skip\n* - Exit\n--> ");
-            scanf("%i", &ans);
-            fflush(stdin);
-        }while(ans<0 || ans>3);
-        if(ans==0) {
+            printf("Introduzca el tipo de casilla\n1 - Propiedad\n2 - Estacion de tren\n3 - Especial\n0 - Skip\n! - Skip somewhere\n* - Exit\n--> ");
+            clearInputBuffer();
+            scanf("%c", &ans);
+        // }while(ans<0 || ans>3 );
+        if(ans=='0') {
             printf("Skipping\n");
             continue;
         }
-        else if(ans=='*'){
+        else if(ans=='!') {
+            int skip;
+            printf("Skip to somewhere? (number/n): ");
+            fflush(stdin);
+            scanf("%i", &skip);
+            if(skip!='n') {
+                cnt=skip-1;
+            }
+        }
+        else if(ans=='*') {
+            printf("Exiting\n");
             break;
         }
-        else if(ans==1) {
+        else if(ans=='1') {
              card[cnt].type = PROPERTY;
              card[cnt].properties.Property.has_owner = HAS_OWNER_DEFAULT;
              card[cnt].properties.Property.is_mortgaged = IS_MORTGAGED_DEFAULT;
@@ -189,16 +207,16 @@ int card_file_gen(int why) {
                  scanf("%i", &card[cnt].properties.Property.rent[aux]);
              };
          }
-         else if(ans==2){
+         else if(ans=='2'){
             card[cnt].type = TRAIN_STATION;
             card[cnt].properties.Train_station.has_owner = HAS_OWNER_DEFAULT;
             printf("Nombre: ");
             fflush(stdin);
             scanf("%s", card[cnt].nombre);
          }
-         else if(ans==3){
+         else if(ans=='3'){
             card[cnt].type = SPECIAL;
-            printf("Editando la casilla especial %i\nIntroduzca el tipo de casilla\n0 - Salida\n1 - Carcel (Visita)\n2 - Suerte\n3 - Caja de la comunidad\n4 - Impuesto pre-salida\n5 - Impuesto pos-salida\n6 - Go to jail\n7 - Parking gratuito\n--> ", cnt);
+            printf("Editando la casilla especial %i\nIntroduzca el tipo de casilla\n0 - Salida\n1 - Carcel (Visita)\n2 - Suerte\n3 - Caja de la comunidad\n4 - Impuesto pre-salida\n5 - Impuesto pos-salida\n6 - Go to jail\n7 - Parking gratuito\n8 - Agua\n9 - Electricidad\n--> ", cnt);
             scanf("%i", &card[cnt].properties.Special.type);
             fflush(stdin);
              switch (card[cnt].properties.Special.type) {
@@ -210,6 +228,8 @@ int card_file_gen(int why) {
                  case 5: strcpy(card[cnt].nombre, "Impuesto pos-salida"); break;
                  case 6: strcpy(card[cnt].nombre, "Go to jail"); break;
                  case 7: strcpy(card[cnt].nombre, "Parking gratuito"); break;
+                 case 8: strcpy(card[cnt].nombre, "Servicio de agua"); break;
+                 case 9: strcpy(card[cnt].nombre, "Servicio electrico"); break;
              };
         };
     };
@@ -234,5 +254,27 @@ int card_file_gen(int why) {
 };
 
 int main(){
-    card_file_gen(1);
+    int cnt;
+    char ans;
+    FILE *file = fopen("card.bin", "rb");
+    if (file == NULL) {
+        perror("Error opening file");
+        card_file_gen(0);
+    };
+    struct Card card[40];
+    size_t num_read = fread(&card, sizeof(struct Card), 40, file);
+    if (num_read != 40) {
+        perror("Error reading file");
+        fclose(file);
+        return 1;
+    };
+    for(cnt=0 ; cnt<40 ; cnt++){
+        printf("%s %s loaded\n", cardTypeToString(card[cnt].type), card[cnt].nombre);
+    }
+    printf("Welcome to Monopoly\ne - Edit card.bin\n--> ");
+    clearInputBuffer();
+    scanf("%c", &ans);
+    if(ans=='e'){
+        card_file_gen(1);
+    }
 }
