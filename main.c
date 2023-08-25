@@ -6,6 +6,9 @@
 #define IS_MORTGAGED_DEFAULT 0
 #define HOUSE_DEFAULT 0
 
+//TODO: Fix the double write error
+//TODO:
+
 enum CardType {
     PROPERTY,
     TRAIN_STATION,
@@ -253,12 +256,15 @@ int card_file_gen(int why) {
     return 0;
 };
 
+int monocpoly();
+
 int main(){
     int cnt;
     char ans;
-    FILE *file = fopen("card.bin", "rb");
+    FILE *file;
+    reload:
+    file = fopen("card.bin", "rb");
     if (file == NULL) {
-        perror("Error opening file");
         card_file_gen(0);
     };
     struct Card card[40];
@@ -280,25 +286,15 @@ int main(){
         } else if (ans == 'r') {
             printf("Reloading card.bin\n");
             fclose(file);
-            file = fopen("card.bin", "rb");
-            if (file == NULL) {
-                perror("Error opening file");
-                card_file_gen(0);
-            };
-            size_t num_read = fread(&card, sizeof(struct Card), 40, file);
-            if (num_read != 40) {
-                perror("Error reading file, file is probably corrupted");
-                fclose(file);
-                return 1;
-            };
-            for (cnt = 0; cnt < 40; cnt++) {
-                printf("%i - %s %s loaded\n", cnt, cardTypeToString(card[cnt].type), card[cnt].nombre);
-            }
+            goto reload;
         } else if (ans == 'q') {
             printf("Exiting\n");
+            fclose(file);
             break;
-        } else {
+        } else if (ans == 's') {
+            monocpoly();
+        }else {
             printf("Unknown command\n");
         }
-    }while(ans!='q');
+    } while(ans!='q');
 }
