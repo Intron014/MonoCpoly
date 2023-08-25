@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
 
 #define HAS_OWNER_DEFAULT -1
 #define IS_MORTGAGED_DEFAULT 0
@@ -98,19 +100,24 @@ struct Ccandl {
     char description[250];
 } Ccandl;
 
-struct { // Players
+struct Players { // Players
+    char nombre[50];
     int money;
     int pos;
     // Flags
     bool in_jail;
     bool has_water;
     bool has_electric;
+    bool is_bankrupt;
 } Players;
 void clearInputBuffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
-
+int random_number(int max, int low){
+    int result = (rand() % (max - low + 1)) + low;
+    return result;
+}
 int card_file_gen(int why) {
     // why 0 - file not found // why 1 - edit struct //
     struct Card card[40];
@@ -256,9 +263,54 @@ int card_file_gen(int why) {
     return 0;
 };
 
-int monocpoly();
+int monocpoly(struct Card card[40]){
+    int pcount;
+    do{
+        printf("How many players are here today? (2 - 7) --> ");
+        scanf("%i", &pcount);
+        if(pcount<2 || pcount>8){
+            printf("Invalid number of players\n");
+        }
+    } while(pcount<2 || pcount>8);
+    struct Players players[pcount];
+    int player_non_bankrupt = pcount;
+    for(int cnt=0 ; cnt<pcount ; cnt++){
+        printf("Nombre del jugador %i: ", cnt+1);
+        fflush(stdin);
+        scanf(" %49[^\n]", players[cnt].nombre);
+        players[cnt].money = 1500;
+        players[cnt].pos = 0;
+        players[cnt].in_jail = false;
+        players[cnt].has_water = false;
+        players[cnt].has_electric = false;
+    };
+    int order[pcount];
+    do{ // Main game loop
+        // Main loop
+        for(int cnt=0 ; cnt<pcount ; cnt++){
+            order[cnt] = cnt;
+        };
+        for(int cnt=0 ; cnt<pcount ; cnt++){
+            int aux;
+            int random = random_number(pcount-1, 0);
+            aux = order[cnt];
+            order[cnt] = order[random];
+            order[random] = aux;
+        };
+        for(int cnt=0 ; cnt<pcount ; cnt++){
+            printf("%i - %s\n", cnt+1, players[order[cnt]].nombre);
+        };
+        printf("----------\n");
+        int turn = 0;
+        int dice1, dice2;
+
+    } while(player_non_bankrupt>1);
+
+    return 0;
+}
 
 int main(){
+    srand(time(NULL));
     int cnt;
     char ans;
     FILE *file;
@@ -278,21 +330,32 @@ int main(){
         printf("%i - %s %s loaded\n", cnt, cardTypeToString(card[cnt].type), card[cnt].nombre);
     }
     do {
-        printf("\nWelcome to Monopoly\n----------\ne - Edit card.bin\nr - Reload card.bin\nq - quit\n--> ");
+        printf("\nWelcome to Monopoly\n----------\nd - Debug menu\ns - Start the game\nq - quit\n--> ");
         clearInputBuffer();
         scanf("%c", &ans);
-        if (ans == 'e') {
-            card_file_gen(1);
-        } else if (ans == 'r') {
-            printf("Reloading card.bin\n");
-            fclose(file);
-            goto reload;
+        if (ans == 'd') {
+            printf("Debug menu\n----------\ne - Edit card.bin\nr - Reload card.bin\nq - Exit debug menu\n--> ");
+            clearInputBuffer();
+            scanf("%c", &ans);
+            if (ans == 'e') {
+                card_file_gen(1);
+            } else if (ans == 'r') {
+                printf("Reloading card.bin\n");
+                fclose(file);
+                goto reload;
+            } else if (ans == 'q') {
+                printf("Exiting\n");
+                fclose(file);
+                break;
+            } else {
+                printf("Unknown command\n");
+            }
         } else if (ans == 'q') {
             printf("Exiting\n");
             fclose(file);
             break;
         } else if (ans == 's') {
-            monocpoly();
+            monocpoly(card);
         }else {
             printf("Unknown command\n");
         }
