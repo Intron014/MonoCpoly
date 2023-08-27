@@ -343,7 +343,7 @@ int main(){
                 printf("Reloading card.bin\n");
                 fclose(file);
                 goto reload;
-            } else if (ans == 'q') {
+            } else if (ans == '*') {
                 printf("Exiting\n");
                 fclose(file);
                 break;
