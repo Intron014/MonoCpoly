@@ -219,17 +219,19 @@ void trade_cards(struct Players *players, int pcount, struct Card card[40]) {
 
 int monocpoly(struct Card card[40]) {
     int pcount;
-    do{
+    do {
         printf("How many players are here today? (2 - 7) --> ");
         scanf("%i", &pcount);
-        if(pcount<2 || pcount>8){
+        if (pcount < 2 || pcount > 7) {
             printf("Invalid number of players\n");
         }
-    } while(pcount<2 || pcount>8);
+    } while (pcount < 2 || pcount > 7);
+
     struct Players players[pcount];
     int player_non_bankrupt = pcount;
-    for(int cnt=0 ; cnt<pcount ; cnt++){
-        printf("Nombre del jugador %i: ", cnt+1);
+
+    for (int cnt = 0; cnt < pcount; cnt++) {
+        printf("Nombre del jugador %i: ", cnt + 1);
         fflush(stdin);
         scanf(" %49[^\n]", players[cnt].nombre);
         players[cnt].money = 1500;
@@ -237,31 +239,121 @@ int monocpoly(struct Card card[40]) {
         players[cnt].in_jail = false;
         players[cnt].has_water = false;
         players[cnt].has_electric = false;
-    };
+        players[cnt].is_bankrupt = false;
+    }
+
     int order[pcount];
-    do{ // Main game loop
-        // Main loop
-        for(int cnt=0 ; cnt<pcount ; cnt++){
-            order[cnt] = cnt;
-        };
-        for(int cnt=0 ; cnt<pcount ; cnt++){
-            int aux;
-            int random = random_number(pcount-1, 0);
-            aux = order[cnt];
+    for (int cnt = 0; cnt < pcount; cnt++) {
+        order[cnt] = cnt;
+    }
+
+    while (player_non_bankrupt > 1) {
+        for (int cnt = 0; cnt < pcount; cnt++) {
+            int random = random_number(pcount - 1, 0);
+            int aux = order[cnt];
             order[cnt] = order[random];
             order[random] = aux;
-        };
-        for(int cnt=0 ; cnt<pcount ; cnt++){
-            printf("%i - %s\n", cnt+1, players[order[cnt]].nombre);
-        };
-        printf("----------\n");
-        int turn = 0;
-        int dice1, dice2;
-        random_number(6, 1);
+        }
 
-    } while(player_non_bankrupt>1);
+        for (int cnt = 0; cnt < pcount; cnt++) {
+            if (players[order[cnt]].is_bankrupt) {
+                continue;
+            }
+
+            printf("%s's turn\n", players[order[cnt]].nombre);
+            int dice1 = random_number(6, 1);
+            int dice2 = random_number(6, 1);
+            printf("Rolled %d and %d\n", dice1, dice2);
+
+            if (players[order[cnt]].in_jail) {
+                printf("%s is in jail.\n", players[order[cnt]].nombre);
+                if (dice1 == dice2) {
+                    printf("Rolled doubles! Getting out of jail.\n");
+                    players[order[cnt]].in_jail = false;
+                } else {
+                    printf("Not doubles. Remaining in jail.\n");
+                    continue;
+                }
+            }
+
+            players[order[cnt]].pos = (players[order[cnt]].pos + dice1 + dice2) % 40;
+            struct Card *currentCard = &card[players[order[cnt]].pos];
+
+            display_player_position(players[order[cnt]], *currentCard);
+
+            switch (currentCard->type) {
+                case PROPERTY:
+                    if (currentCard->properties.Property.has_owner == -1) {
+                        printf("Do you want to buy %s for %d? (y/n) --> ", currentCard->nombre, currentCard->properties.Property.precio);
+                        char buy;
+                        fflush(stdin);
+                        scanf(" %c", &buy);
+                        if (buy == 'y') {
+                            if (players[order[cnt]].money >= currentCard->properties.Property.precio) {
+                                players[order[cnt]].money -= currentCard->properties.Property.precio;
+                                currentCard->properties.Property.has_owner = order[cnt];
+                                printf("You bought %s\n", currentCard->nombre);
+                            } else {
+                                printf("Not enough money to buy %s\n", currentCard->nombre);
+                            }
+                        }
+                    } else if (currentCard->properties.Property.has_owner != order[cnt]) {
+                        // Pay rent
+                        int rentIndex = currentCard->properties.Property.houses;
+                        int rent = currentCard->properties.Property.rent[rentIndex];
+                        printf("Paying rent of %d to %s\n", rent, players[currentCard->properties.Property.has_owner].nombre);
+                        players[order[cnt]].money -= rent;
+                        players[currentCard->properties.Property.has_owner].money += rent;
+                        if (players[order[cnt]].money < 0) {
+                            players[order[cnt]].is_bankrupt = true;
+                            player_non_bankrupt--;
+                            printf("%s is bankrupt!\n", players[order[cnt]].nombre);
+                        }
+                    }
+                    break;
+
+                case TRAIN_STATION:
+                    // Handle train station logic
+                    break;
+
+                case SPECIAL:
+                    // Handle special card logic
+                    break;
+
+                case NULLIVER:
+                default:
+                    break;
+            }
+
+            if (players[order[cnt]].money > 0) {
+                printf("%s has %d money remaining\n", players[order[cnt]].nombre, players[order[cnt]].money);
+            }
+
+            if (dice1 != dice2) {
+                break;
+            } else {
+                printf("Rolled doubles! Take another turn.\n");
+            }
+        }
+
+        char trade;
+        printf("Do you want to trade cards? (y/n) --> ");
+        fflush(stdin);
+        scanf(" %c", &trade);
+        if (trade == 'y') {
+            trade_cards(players, pcount, card);
+        }
+    }
+
+    for (int cnt = 0; cnt < pcount; cnt++) {
+        if (!players[cnt].is_bankrupt) {
+            printf("%s wins!\n", players[cnt].nombre);
+        }
+    }
 
     return 0;
 }
+
+
 
 #endif //MONOCPOLY_GAME_H
