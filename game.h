@@ -149,6 +149,21 @@ int card_file_gen(int why) {
     return 0;
 };
 int monocpoly(struct Card card[40]){
+
+void display_player_position(struct Players player, struct Card card) {
+    printf("%s has landed on %s\n", player.nombre, card.nombre);
+    if (card.type == PROPERTY) {
+        printf("Type: Property\nOwner: %s\nPrice: %d\nColor: %s\n",
+               card.properties.Property.has_owner == -1 ? "None" : player.nombre,
+               card.properties.Property.precio,
+               colorToString(card.properties.Property.color));
+    } else if (card.type == TRAIN_STATION) {
+        printf("Type: Train Station\nOwner: %s\n",
+               card.properties.Train_station.has_owner == -1 ? "None" : player.nombre);
+    } else if (card.type == SPECIAL) {
+        printf("Type: Special\n");
+    }
+}
     int pcount;
     do{
         printf("How many players are here today? (2 - 7) --> ");
