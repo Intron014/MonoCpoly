@@ -148,7 +148,6 @@ int card_file_gen(int why) {
     printf("Card data saved to card.bin\n");
     return 0;
 };
-int monocpoly(struct Card card[40]){
 
 void display_player_position(struct Players player, struct Card card) {
     printf("%s has landed on %s\n", player.nombre, card.nombre);
@@ -164,6 +163,61 @@ void display_player_position(struct Players player, struct Card card) {
         printf("Type: Special\n");
     }
 }
+
+void trade_cards(struct Players *players, int pcount, struct Card card[40]) {
+    char trader_name[50], tradee_name[50];
+    int trader_index = -1, tradee_index = -1;
+    printf("Enter your name: ");
+    fflush(stdin);
+    scanf(" %49[^\n]", trader_name);
+    for (int i = 0; i < pcount; i++) {
+        if (strcmp(players[i].nombre, trader_name) == 0) {
+            trader_index = i;
+            break;
+        }
+    }
+    if (trader_index == -1) {
+        printf("Player not found.\n");
+        return;
+    }
+
+    printf("Enter the name of the player you want to trade with: ");
+    fflush(stdin);
+    scanf(" %49[^\n]", tradee_name);
+    for (int i = 0; i < pcount; i++) {
+        if (strcmp(players[i].nombre, tradee_name) == 0) {
+            tradee_index = i;
+            break;
+        }
+    }
+    if (tradee_index == -1) {
+        printf("Player not found.\n");
+        return;
+    }
+
+    int trader_property_index, tradee_property_index;
+    printf("Enter the index of your property (0-39): ");
+    fflush(stdin);
+    scanf("%d", &trader_property_index);
+    if (trader_property_index < 0 || trader_property_index >= 40 || card[trader_property_index].properties.Property.has_owner != trader_index) {
+        printf("Invalid property index.\n");
+        return;
+    }
+
+    printf("Enter the index of the property you want to trade for (0-39): ");
+    fflush(stdin);
+    scanf("%d", &tradee_property_index);
+    if (tradee_property_index < 0 || tradee_property_index >= 40 || card[tradee_property_index].properties.Property.has_owner != tradee_index) {
+        printf("Invalid property index.\n");
+        return;
+    }
+
+    card[trader_property_index].properties.Property.has_owner = tradee_index;
+    card[tradee_property_index].properties.Property.has_owner = trader_index;
+    printf("Trade completed successfully.\n");
+}
+
+int monocpoly(struct Card card[40]) {
     int pcount;
     do{
         printf("How many players are here today? (2 - 7) --> ");
